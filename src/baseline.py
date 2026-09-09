@@ -42,21 +42,22 @@ def evaluate_inventory(inventory: dict) -> list[Finding]:
                 "T1078 Valid Accounts",
             ))
 
-    logging = inventory.get("logging", {})
-    if not logging.get("export_enabled", False):
-        findings.append(Finding(
-            "AZ-LOG-001", "HIGH", "subscription",
-            "Activity logs are not exported",
-            "export_enabled=false",
-            "Export activity logs to a protected analytics/archive destination and validate ingestion.",
-        ))
-    if int(logging.get("retention_days", 0)) < 90:
-        findings.append(Finding(
-            "AZ-LOG-002", "MEDIUM", "subscription",
-            "Activity-log retention below baseline",
-            f"retention_days={logging.get('retention_days', 0)}",
-            "Raise retention to the approved policy threshold and verify historical availability.",
-        ))
+    if "logging" in inventory:
+        logging = inventory["logging"]
+        if not logging.get("export_enabled", False):
+            findings.append(Finding(
+                "AZ-LOG-001", "HIGH", "subscription",
+                "Activity logs are not exported",
+                "export_enabled=false",
+                "Export activity logs to a protected analytics/archive destination and validate ingestion.",
+            ))
+        if int(logging.get("retention_days", 0)) < 90:
+            findings.append(Finding(
+                "AZ-LOG-002", "MEDIUM", "subscription",
+                "Activity-log retention below baseline",
+                f"retention_days={logging.get('retention_days', 0)}",
+                "Raise retention to the approved policy threshold and verify historical availability.",
+            ))
 
     for rule in inventory.get("network_rules", []):
         if rule.get("source") == "0.0.0.0/0" and int(rule.get("port", 0)) in {22, 3389}:
